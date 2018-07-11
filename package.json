@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Aha00a/ClienPark/issues"
   },
-  "homepage": "https://github.com/Aha00a/ClienPark#readme"
+  "homepage": "https://github.com/Aha00a/ClienPark#readme",
+  "dependencies": {
+    "puppeteer": "^1.5.0"
+  }
 }
