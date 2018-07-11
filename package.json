@@ -1,0 +1,19 @@
+{
+  "name": "clienpark",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aha00a/ClienPark.git"
+  },
+  "author": "aha00a",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Aha00a/ClienPark/issues"
+  },
+  "homepage": "https://github.com/Aha00a/ClienPark#readme"
+}
