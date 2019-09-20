@@ -73,7 +73,7 @@ function checkCacheAndLaunch(cache, v) {
             exec(`"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" "${v}"`);
             return true;
         case 'darwin':
-            console.log('OSX!');
+            exec(`open "${v}"`);
             return true;
     }
     return true;
