@@ -70,7 +70,7 @@ function checkCacheAndLaunch(cache, v) {
     cache.put(id);
     switch(os.platform()){
         case 'win32':
-            exec(`"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" "${v}"`);
+            exec(`start "" "${v}"`);
             return true;
         case 'darwin':
             exec(`open "${v}"`);
