@@ -86,7 +86,7 @@ async function extractClienHref(browser, url, cache) {
     const array = await page.$$eval('a.list_subject', a => [].map.call(a, a => a.href));
     return array
         .filter(s => s.startsWith('https://www.clien.net/service/board/park/'))
-        .map((v, i) => checkCacheAndLaunch(cache, v));
+        .map(v => checkCacheAndLaunch(cache, v));
 }
 
 
