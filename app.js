@@ -88,7 +88,7 @@ async function extractClienHref(browser, url, cache) {
         puppeteer.launch(),
     ]);
 
-    for(let i = 0; i < 10; i++) {
+    for(let i = 0; i < 100; i++) {
         const arrayResult = await extractClienHref(browser, `https://www.clien.net/service/board/park?&od=T33&po=${i}`, cache);
         const arrayResultFiltered = arrayResult.filter(v => v);
         if(arrayResultFiltered.length)
