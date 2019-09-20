@@ -61,17 +61,17 @@ class Cache {
 function checkCacheAndLaunch(cache, v) {
     const path = url.parse(v).pathname.split('/');
     const id = path[path.length - 1];
-    if(cache.exists(id)) {
-        console.log(`skip\t${v}`);
-        return;
-    }
+    if(cache.exists(id))
+        return false;
 
     console.log(`open\t${v}`);
     cache.put(id);
     exec(`"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" "${v}"`);
+    return true;
 }
 
 async function extractClienHref(browser, url, cache) {
+    console.log(`extractClienHref\t${url}`);
     const page = await browser.newPage();
     await page.goto(url);
     const array = await page.$$eval('a.list_subject', a => [].map.call(a, a => a.href));
@@ -88,10 +88,13 @@ async function extractClienHref(browser, url, cache) {
         puppeteer.launch(),
     ]);
 
-    await Promise.all([
-        extractClienHref(browser, 'https://www.clien.net/service/board/park?&od=T32', cache),
-        extractClienHref(browser, 'https://www.clien.net/service/board/park?&od=T33', cache)
-    ]);
+    for(let i = 0; i < 10; i++) {
+        const arrayResult = await extractClienHref(browser, `https://www.clien.net/service/board/park?&od=T33&po=${i}`, cache);
+        const arrayResultFiltered = arrayResult.filter(v => v);
+        if(arrayResultFiltered.length)
+            break;
+    }
+    console.log('Done');
     await Promise.all([
         browser.close(),
         cache.save()
