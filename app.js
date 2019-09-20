@@ -90,8 +90,7 @@ async function extractClienHref(browser, url, cache) {
 
     for(let i = 0; i < 100; i++) {
         const arrayResult = await extractClienHref(browser, `https://www.clien.net/service/board/park?&od=T33&po=${i}`, cache);
-        const arrayResultFiltered = arrayResult.filter(v => v);
-        if(arrayResultFiltered.length)
+        if(arrayResult.some(v => v))
             break;
     }
     console.log('Done');
