@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 const { exec } = require('child_process');
 const url = require('url');
 const fs = require('fs');
+const os = require('os');
+
 
 class FsAsync {
     static readFile(path, options) {
@@ -66,7 +68,14 @@ function checkCacheAndLaunch(cache, v) {
 
     console.log(`open\t${v}`);
     cache.put(id);
-    exec(`"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" "${v}"`);
+    switch(os.platform()){
+        case 'win32':
+            exec(`"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" "${v}"`);
+            return true;
+        case 'darwin':
+            console.log('OSX!');
+            return true;
+    }
     return true;
 }
 
