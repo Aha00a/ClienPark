@@ -1,10 +1,8 @@
-
-const puppeteer = require('puppeteer');
 const { exec } = require('child_process');
 const url = require('url');
 const fs = require('fs');
 const os = require('os');
-
+const fetch = require('node-fetch');
 
 class FsAsync {
     static readFile(path, options) {
@@ -48,7 +46,7 @@ class Cache {
     }
 
     exists(k) {
-        return this.lines.indexOf(k) >= 0;
+        return this.lines.includes(k);
     }
 
     put(k) {
@@ -63,8 +61,10 @@ class Cache {
 function checkCacheAndLaunch(cache, v) {
     const path = url.parse(v).pathname.split('/');
     const id = path[path.length - 1];
-    if(cache.exists(id))
+    if(cache.exists(id)) {
+        // console.log(`skip\t${v}`);
         return false;
+    }
 
     console.log(`open\t${v}`);
     cache.put(id);
@@ -79,32 +79,29 @@ function checkCacheAndLaunch(cache, v) {
     return true;
 }
 
-async function extractClienHref(browser, url, cache) {
-    console.log(`extractClienHref\t${url}`);
-    const page = await browser.newPage();
-    await page.goto(url);
-    const array = await page.$$eval('a.list_subject', a => [].map.call(a, a => a.href));
-    return array
-        .filter(s => s.startsWith('https://www.clien.net/service/board/park/'))
-        .map(v => checkCacheAndLaunch(cache, v));
+async function parseClienListAndLaunchArticlesWithPage(page, cache) {
+    try {
+        const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
+        console.log(`crawl\t${url}`);
+        const text = await fetch(url).then(r => r.text());
+        return text
+            .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
+            .filter(v => !v.endsWith("#comment-point"))
+            .map(v => `https://clien.net${v}`)
+            .map(v => checkCacheAndLaunch(cache, v));
+    } catch (e) {
+        console.log(e);
+        return [];
+    }
 }
-
 
 (async () => {
     const cache = new Cache();
-    const [, browser] = await Promise.all([
-        cache.load(),
-        puppeteer.launch(),
-    ]);
-
+    await cache.load();
     for(let i = 0; i < 100; i++) {
-        const arrayResult = await extractClienHref(browser, `https://www.clien.net/service/board/park?&od=T33&po=${i}`, cache);
+        const arrayResult = await parseClienListAndLaunchArticlesWithPage(i, cache);
         if(arrayResult.some(v => v))
             break;
     }
-    console.log('Done');
-    await Promise.all([
-        browser.close(),
-        cache.save()
-    ])
+    await cache.save();
 })();
