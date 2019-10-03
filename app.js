@@ -96,6 +96,12 @@ async function parseClienListAndLaunchArticlesWithPage(page, cache) {
 }
 
 (async () => {
+    const [,major, minor, patch] = process.version.match(/v(\d+)\.(\d+)\.(\d+)/).map(v => parseInt(v));
+    if(!major || major < 10) {
+        console.error("Requires node version 10 or higher");
+        return;
+    }
+
     const cache = new Cache();
     await cache.load();
     for(let i = 0; i < 100; i++) {
