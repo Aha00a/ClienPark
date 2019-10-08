@@ -43,7 +43,7 @@ class Clien {
         const cache = new Cache();
         await cache.load();
         {
-            const max = 10; // TODO: apply program argument
+            const max = parseInt(process.argv[2]) || 10;
             let opened = 0;
 
             const clien = new Clien();
