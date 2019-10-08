@@ -43,7 +43,7 @@ class Clien {
         const cache = new Cache();
         await cache.load();
         {
-            const max = 3;
+            const max = 10; // TODO: apply program argument
             let opened = 0;
 
             const clien = new Clien();
