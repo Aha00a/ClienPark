@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const Cache = require('./modules/utils/Cache');
 const WebBrowserLauncher = require('./modules/utils/WebBrowserLauncher');
 
-async function getClienArticles(page) {
+async function getClienArticlesWithPage(page) {
     const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
     console.log(`crawl\t${url}`);
     const text = await fetch(url).then(r => r.text());
@@ -15,7 +15,7 @@ async function getClienArticles(page) {
 
 async function parseClienListAndLaunchArticlesWithPage(page, cache) {
     try {
-        const articles = await getClienArticles(page);
+        const articles = await getClienArticlesWithPage(page);
         return articles.map(v => {
             const path = url.parse(v).pathname.split('/');
             const id = path[path.length - 1];
