@@ -3,49 +3,63 @@ const fetch = require('node-fetch');
 const Cache = require('./modules/utils/Cache');
 const WebBrowserLauncher = require('./modules/utils/WebBrowserLauncher');
 
-async function getClienArticlesWithPage(page) {
-    const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
-    console.log(`crawl\t${url}`);
-    const text = await fetch(url).then(r => r.text());
-    return text
-        .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
-        .filter(v => !v.endsWith("#comment-point"))
-        .map(v => `https://clien.net${v}`);
-}
+class Clien {
+    constructor() {
+        this.page = 0;
+        this.array = [];
+    }
+    
+    async get() {
+        if(this.array.length === 0)
+            this.array = await Clien.getClienArticlesWithPage(this.page++);
 
-async function parseClienListAndLaunchArticlesWithPage(page, cache) {
-    try {
-        const articles = await getClienArticlesWithPage(page);
-        return articles.map(v => {
-            const path = url.parse(v).pathname.split('/');
-            const id = path[path.length - 1];
-            if(cache.exists(id))
-                return false;
+        return this.array.shift();
+    }
 
-            const launch = WebBrowserLauncher.launch(v);
-            if(launch)
-                cache.put(id);
+    static async getClienArticlesWithPage(page) {
+        const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
+        console.log(`crawl\t${url}`);
+        const response = await fetch(url);
+        const text = await response.text();
+        return text
+            .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
+            .filter(v => !v.endsWith("#comment-point"))
+            .map(v => `https://clien.net${v}`);
+    }
 
-            return launch;
-        });
-    } catch (e) {
-        console.log(e);
-        return [];
+    static getClienId(articleUrl) {
+        const path = url.parse(articleUrl).pathname.split('/');
+        return path[path.length - 1];
     }
 }
 
 (async () => {
-    if(!WebBrowserLauncher.isSupportedPlatform()) {
-        console.log('Not supported platform');
-        return;
-    }
+    try {
+        if (!WebBrowserLauncher.isSupportedPlatform()) {
+            console.log('Not supported platform');
+            return;
+        }
 
-    const cache = new Cache();
-    await cache.load();
-    for(let i = 0; i < 100; i++) {
-        const arrayResult = await parseClienListAndLaunchArticlesWithPage(i, cache);
-        if(arrayResult.some(v => v))
-            break;
+        const cache = new Cache();
+        await cache.load();
+        {
+            const max = 3;
+            let opened = 0;
+
+            const clien = new Clien();
+            while(opened < max) {
+                const articleUrl = await clien.get();
+                const id = Clien.getClienId(articleUrl);
+                if (cache.exists(id))
+                    continue;
+
+                WebBrowserLauncher.launch(articleUrl);
+                cache.put(id);
+                opened++;
+            }
+        }
+        await cache.save();
+    } catch (e) {
+        console.log(e);
     }
-    await cache.save();
 })();
