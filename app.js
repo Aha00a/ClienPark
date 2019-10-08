@@ -58,37 +58,46 @@ class Cache {
     }
 }
 
-function checkCacheAndLaunch(cache, v) {
-    const path = url.parse(v).pathname.split('/');
-    const id = path[path.length - 1];
-    if(cache.exists(id)) {
-        // console.log(`skip\t${v}`);
-        return false;
-    }
+function execute(s) {
+    console.log(`exec\t${s}`);
+    exec(s);
+}
 
-    console.log(`open\t${v}`);
-    cache.put(id);
-    switch(os.platform()){
+function launchBrowser(v) {
+    return true;
+    switch (os.platform()) {
         case 'win32':
-            exec(`start "" "${v}"`);
+            execute(`start "" "${v}"`);
             return true;
         case 'darwin':
-            exec(`open "${v}"`);
+            execute(`open "${v}"`);
             return true;
     }
     return true;
 }
 
+async function getClienArticles(page) {
+    const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
+    console.log(`crawl\t${url}`);
+    const text = await fetch(url).then(r => r.text());
+    return text
+        .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
+        .filter(v => !v.endsWith("#comment-point"))
+        .map(v => `https://clien.net${v}`);
+}
+
 async function parseClienListAndLaunchArticlesWithPage(page, cache) {
     try {
-        const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
-        console.log(`crawl\t${url}`);
-        const text = await fetch(url).then(r => r.text());
-        return text
-            .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
-            .filter(v => !v.endsWith("#comment-point"))
-            .map(v => `https://clien.net${v}`)
-            .map(v => checkCacheAndLaunch(cache, v));
+        const articles = await getClienArticles(page);
+        return articles.map(v => {
+            const path = url.parse(v).pathname.split('/');
+            const id = path[path.length - 1];
+            if(cache.exists(id))
+                return false;
+
+            cache.put(id);
+            return launchBrowser(v);
+        });
     } catch (e) {
         console.log(e);
         return [];
