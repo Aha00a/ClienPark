@@ -8,7 +8,7 @@ class Clien {
         this.page = 0;
         this.array = [];
     }
-    
+
     async get() {
         if(this.array.length === 0)
             this.array = await Clien.getClienArticlesWithPage(this.page++);
@@ -37,6 +37,13 @@ class Clien {
     try {
         if (!WebBrowserLauncher.isSupportedPlatform()) {
             console.log('Not supported platform');
+            return;
+        }
+
+        // noinspection JSUnusedLocalSymbols
+        const [version ,major, minor, patch] = process.version.match(/v(\d+)\.(\d+)\.(\d+)/).map(v => parseInt(v));
+        if(!major || major < 10) {
+            console.error("Requires node version 10 or higher");
             return;
         }
 
