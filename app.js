@@ -1,25 +1,7 @@
-const { exec } = require('child_process');
 const url = require('url');
-const os = require('os');
 const fetch = require('node-fetch');
 const Cache = require('./modules/utils/Cache');
-
-function execute(s) {
-    console.log(`exec\t${s}`);
-    exec(s);
-}
-
-function launchBrowser(v) {
-    switch (os.platform()) {
-        case 'win32':
-            execute(`start "" "${v}"`);
-            return true;
-        case 'darwin':
-            execute(`open "${v}"`);
-            return true;
-    }
-    return true;
-}
+const WebBrowserLauncher = require('./modules/utils/WebBrowserLauncher');
 
 async function getClienArticles(page) {
     const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
@@ -40,8 +22,11 @@ async function parseClienListAndLaunchArticlesWithPage(page, cache) {
             if(cache.exists(id))
                 return false;
 
-            cache.put(id);
-            return launchBrowser(v);
+            const launch = WebBrowserLauncher.launch(v);
+            if(launch)
+                cache.put(id);
+
+            return launch;
         });
     } catch (e) {
         console.log(e);
@@ -50,6 +35,11 @@ async function parseClienListAndLaunchArticlesWithPage(page, cache) {
 }
 
 (async () => {
+    if(!WebBrowserLauncher.isSupportedPlatform()) {
+        console.log('Not supported platform');
+        return;
+    }
+
     const cache = new Cache();
     await cache.load();
     for(let i = 0; i < 100; i++) {
