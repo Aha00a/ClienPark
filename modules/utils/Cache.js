@@ -2,7 +2,7 @@ const FsAsync = require('./FsAsync');
 
 module.exports = class Cache {
     static cacheFile() {
-        return 'cache.txt';
+        return process.env.CLIENPARK_CACHEPATH || 'cache.txt';
     }
 
     async load() {
