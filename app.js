@@ -16,11 +16,20 @@ class Clien {
         return this.array.shift();
     }
 
-    static async getClienArticlesWithPage(page) {
+    static async getClienArticlesWithPage(page, {cookie} = {}) {
         const url = `https://clien.net/service/board/park?&od=T33&po=${page}`;
         console.log(`crawl\t${url}`);
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Cookie: cookie
+            }
+        });
         const text = await response.text();
+        const match = text.match(/document.cookie="(\w+=\w+)"/);
+        if(match){
+            return this.getClienArticlesWithPage(page, {cookie: match[1]})
+        }
         return text
             .match(new RegExp('(?<=href=")/service/board/park/(\\d+)[^"]+', 'g'))
             .filter(v => !v.endsWith("#comment-point"))
