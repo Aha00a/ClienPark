@@ -19,6 +19,6 @@ module.exports = class Cache {
     }
 
     async save() {
-        await FsAsync.writeFile(Cache.cacheFile(), this.lines.slice(-1000).join('\n'), 'utf8');
+        await FsAsync.writeFile(Cache.cacheFile(), this.lines.slice(-10000).join('\n'), 'utf8');
     }
 };
